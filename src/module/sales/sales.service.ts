@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SalesEntities } from 'src/entitities/sales.entities';
-import { SalesItemsEntities } from 'src/entitities/sales-items.entities';
 
 @Injectable()
 export class SalesService {
@@ -11,13 +10,22 @@ export class SalesService {
     private salesRepository: Repository<SalesEntities>,
   ) {}
 
- async findSales() {
+  // Find sales data
+  findSales() {
     return this.salesRepository.find({
-        relations: ['sales_items','sales_items.product'],
-        order : {
-            'sales_id': 'desc'
-        }
+      relations: ['sales_items', 'sales_items.product'],
+      order: {
+        sales_id: 'desc',
+      },
     });
-  
+  }
+
+  // Create new sales instance
+  async createSales(): Promise<number> {
+    const { sales_id } = await this.salesRepository.findOne({
+      order: { sales_id: 'desc' },
+      where: {},
+    });
+    return sales_id;
   }
 }

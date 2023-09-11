@@ -10,10 +10,11 @@ export class ProductService {
     private productRepository: Repository<ProductEntities>,
   ) {}
 
-  // Fetch products data
-  findProducts() {
+  // Find products data
+  findProducts(): Promise<ProductEntities[]> {
     return this.productRepository
       .createQueryBuilder('p')
+      .select(['product_id', 'product_name', 'packaging_size,initial_stocks'])
       .addSelect(
         `(select coalesce(sum(po.output_quantity), 0) from production_outputs po where po.product_id = p.product_id) as in`,
       )

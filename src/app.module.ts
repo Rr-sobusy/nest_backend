@@ -1,12 +1,10 @@
-require('dotenv').config()
+require('dotenv').config();
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { OrderModule } from './order/order.module';
-import { Order } from './typeorm/entities/orders.entites';
-import { OrderItems } from './typeorm/entities/order-items.entities';
-
+import { ProductEntities } from './entitities/product.entities';
+import { ProductModule } from './module/product/product.module';
 
 @Module({
   imports: [
@@ -17,10 +15,10 @@ import { OrderItems } from './typeorm/entities/order-items.entities';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [Order,OrderItems],
-      synchronize: true,
+      entities: [ProductEntities],
+      synchronize: false,
     }),
-    OrderModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],

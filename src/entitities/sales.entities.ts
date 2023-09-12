@@ -15,9 +15,6 @@ export class SalesEntities {
   @Column()
   updatedAt: Date;
 
-  @Column()
-  customer_name: string;
-
   @OneToMany((type)=>SalesItemsEntities, (props)=>props.sales)
   @JoinColumn({name:'sales_id'})
   sales_items: SalesItemsEntities[]

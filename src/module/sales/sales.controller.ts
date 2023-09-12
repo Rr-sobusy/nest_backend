@@ -1,5 +1,6 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post , Body} from '@nestjs/common';
 import { SalesService } from './sales.service';
+
 
 @Controller('sales')
 export class SalesController {
@@ -10,8 +11,5 @@ export class SalesController {
     return this.salesService.findSales();
   }
 
-  @Post()
-  createSales(){
-    return this.salesService.createSales()
-  }
+
 }

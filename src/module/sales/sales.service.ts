@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { SalesEntities } from 'src/entitities/sales.entities';
 import { SalesItemsEntities } from 'src/entitities/sales-items.entities';
 import { CreateOrderParams } from 'src/utils/types/CreateOrder.types';
-import { CreateOrderItemsParams } from 'src/utils/types/CreateOrderItems.types';
 
 @Injectable()
 export class SalesService {
@@ -26,24 +25,20 @@ export class SalesService {
   }
 
   // Create new sales instance
-  async createSales(
-    orderDetails: CreateOrderParams,
-    orderItemsDetails?: CreateOrderItemsParams,
-  ) {
-    this.salesRepository.create(orderDetails);
+  async createSales(orderDetails: CreateOrderParams) {
+    const newSales = this.salesRepository.save(orderDetails);
 
-    // await this.salesItemsRepository.save({
-    //     quantity: 29,
-    //     product_id: 3,
-    //     sales: {
-    //       sales_id:482
-    //     }
-    // });
-    // const { sales_id } = await this.salesRepository.findOne({
-    //   where: {},
-    //   order: {
-    //     sales_id: 'desc',
-    //   },
-    // });
+    // Iterate list from sales_items type from OrderItem request body
+    orderDetails.sales_items.map(async (values) => {
+      const newSalesItems = this.salesItemsRepository.create({
+        product_id: values.product_id,
+        quantity: values.quantity,
+        sales: {
+          sales_id: (await newSales).sales_id,
+        },
+      });
+      await this.salesItemsRepository.save(newSalesItems);
+    });
+    return newSales;
   }
 }

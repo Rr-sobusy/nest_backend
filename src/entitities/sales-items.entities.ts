@@ -4,7 +4,7 @@ import {
   Entity,
   ManyToOne,
   JoinColumn,
-  OneToOne,
+  VirtualColumn,
 } from 'typeorm';
 import { SalesEntities } from './sales.entities';
 import { ProductEntities } from './product.entities';
@@ -14,6 +14,12 @@ export class SalesItemsEntities {
   @PrimaryGeneratedColumn()
   sales_item_id: number;
 
+  @Column()
+  product_id:number
+
+  @Column()
+  quantity: number;
+
   @ManyToOne(() => SalesEntities)
   @JoinColumn({ name: 'sales_id' })
   sales: SalesEntities;
@@ -22,6 +28,10 @@ export class SalesItemsEntities {
   @JoinColumn({ name: 'product_id' })
   product: ProductEntities;
 
-  @Column()
-  quantity: number;
+  @VirtualColumn({
+    query: (alias) =>
+      `select product_name from products where product_id = ${alias}.product_id `,
+  })
+  product_name: string;
+
 }

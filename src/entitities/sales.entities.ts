@@ -1,4 +1,4 @@
-import { Column, PrimaryGeneratedColumn, Entity, OneToMany, JoinColumn} from 'typeorm';
+import { Column, PrimaryGeneratedColumn, Entity, OneToMany, JoinColumn, CreateDateColumn, UpdateDateColumn} from 'typeorm';
 import { SalesItemsEntities } from './sales-items.entities';
 
 @Entity('product_sales')
@@ -9,10 +9,10 @@ export class SalesEntities {
   @Column()
   customer_id: number;
 
-  @Column()
+  @CreateDateColumn()
   createdAt: Date;
 
-  @Column()
+  @UpdateDateColumn()
   updatedAt: Date;
 
   @OneToMany((type)=>SalesItemsEntities, (props)=>props.sales)

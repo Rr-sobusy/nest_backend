@@ -9,7 +9,7 @@ export class SalesEntities {
   @Column()
   customer_id: number;
 
-  @CreateDateColumn({})
+  @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()

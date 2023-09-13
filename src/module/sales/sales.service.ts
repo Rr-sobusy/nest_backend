@@ -26,7 +26,11 @@ export class SalesService {
 
   // Create new sales instance
   async createSales(orderDetails: CreateOrderParams) {
-    const newSales = this.salesRepository.save(orderDetails);
+    const newSales = this.salesRepository.save({
+      ...orderDetails,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
 
     // Iterate list from sales_items type from OrderItem request body
     orderDetails.sales_items.map(async (values) => {

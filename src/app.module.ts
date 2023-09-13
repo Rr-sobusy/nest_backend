@@ -19,7 +19,7 @@ import { SalesItemsEntities } from './entitities/sales-items.entities';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [ProductEntities, SalesEntities, SalesItemsEntities],
-      synchronize: true,
+      synchronize: false,
     }),
     ProductModule,
     SalesModule,

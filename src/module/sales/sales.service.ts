@@ -24,6 +24,56 @@ export class SalesService {
     });
   }
 
+  // Find sales data this year
+  async findSalesPerYear(currentYear: number) {
+    const result: { sum: string; sales_month: string }[] =
+      await this.salesRepository
+        .createQueryBuilder('sales')
+        .select([
+          `(select sum(sales_items.quantity * products.packaging_size))`,
+          `(select extract(MONTH from sales."createdAt"::date) as sales_month)`,
+        ])
+        .innerJoin('sales.sales_items', 'sales_items')
+        .innerJoin('sales_items.product', 'products')
+        .where(`extract(YEAR from sales."createdAt"::date) = :currentYear `, {
+          currentYear: currentYear,
+        })
+        .groupBy('sales_month')
+        .orderBy('sales_month', 'ASC')
+        .getRawMany();
+    return result.map(({ sum, sales_month }) => {
+      return {
+        total_outbounded: sum,
+        month:
+          sales_month === '1'
+            ? 'January'
+            : sales_month === '2'
+            ? 'February'
+            : sales_month === '3'
+            ? 'March'
+            : sales_month === '4'
+            ? 'April'
+            : sales_month === '5'
+            ? 'May'
+            : sales_month === '6'
+            ? 'June'
+            : sales_month === '7'
+            ? 'July'
+            : sales_month === '8'
+            ? 'August'
+            : sales_month === '9'
+            ? 'September'
+            : sales_month === '10'
+            ? 'October'
+            : sales_month === '11'
+            ? 'November'
+            : sales_month === '12'
+            ? 'December'
+            : null,
+      };
+    });
+  }
+
   // Create new sales instance
   async createSales(orderDetails: CreateOrderParams) {
     const newSales = this.salesRepository.save({

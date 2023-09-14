@@ -9,4 +9,9 @@ export class ProductController {
   findProducts() {
     return this.productService.findProducts();
   }
+
+  @Get('topsoldproduct')
+  findFiveBest(){
+   return this.productService.findFiveBest()
+  }
 }

@@ -32,4 +32,19 @@ export class ProductService {
       .orderBy('p.product_name', 'ASC')
       .getRawMany();
   }
+
+  // Find the 5 of most sold product
+  findFiveBest(): Promise<ProductEntities[]> {
+    return this.productRepository
+      .createQueryBuilder('products')
+      .select(['products.product_id,product_name'])
+      .addSelect(
+        'sum(sales_items.quantity * products.packaging_size) as total_sold',
+      )
+      .leftJoin('products.items', 'sales_items')
+      .groupBy('products.product_id')
+      .orderBy('total_sold', 'DESC')
+      .limit(5)
+      .getRawMany();
+  }
 }

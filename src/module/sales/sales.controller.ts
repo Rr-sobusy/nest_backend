@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body , Param} from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CreateOrderDto } from './dtos/CreateOrderDto';
 
@@ -9,6 +9,11 @@ export class SalesController {
   @Get()
   findSales() {
     return this.salesService.findSales();
+  }
+
+  @Get('salesthisyear/:currentYear')
+  findSalesThisYear(@Param('currentYear') currentYear: number) {
+    return this.salesService.findSalesPerYear(currentYear);
   }
 
   @Post()

@@ -15,7 +15,7 @@ export class SalesItemsEntities {
   sales_item_id: number;
 
   @Column()
-  product_id:number
+  product_id: number;
 
   @Column()
   quantity: number;
@@ -34,4 +34,9 @@ export class SalesItemsEntities {
   })
   product_name: string;
 
+  @VirtualColumn({
+    query: (alias) =>
+      `select packaging_size from products where product_id = ${alias}.product_id `,
+  })
+  packaging_size: number;
 }

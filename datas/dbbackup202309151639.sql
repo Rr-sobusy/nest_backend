@@ -5,7 +5,7 @@
 -- Dumped from database version 14.8
 -- Dumped by pg_dump version 14.8
 
--- Started on 2023-09-11 10:21:29
+-- Started on 2023-09-15 16:39:13
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -18,12 +18,55 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- TOC entry 3 (class 2615 OID 24727)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO postgres;
+
+--
+-- TOC entry 3420 (class 0 OID 0)
+-- Dependencies: 3
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+--
+-- TOC entry 231 (class 1255 OID 24728)
+-- Name: adjust_stocks_from_sales(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.adjust_stocks_from_sales() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+   
+        INSERT INTO stock_transactions (product_id, quantity, transaction_type,new_stocks)
+        VALUES (NEW.product_id, NEW.quantity, 'SALES',(select 
+    (p.initial_stocks + (select coalesce(sum(po.output_quantity),0) as in from production_outputs po where po.product_id = p.product_id) -
+    (select coalesce(sum(si.quantity), 0) as out from sales_items si where si.product_id = p.product_id) - 
+     (select coalesce(sum(rp.quantity), 0) as repros from repro_products rp where rp.product_id = p.product_id)) as current_stocks
+    from products p where p.product_id = new.product_id limit 1));
+
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.adjust_stocks_from_sales() OWNER TO postgres;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- TOC entry 230 (class 1259 OID 33051)
+-- TOC entry 228 (class 1259 OID 33051)
 -- Name: customers; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -36,7 +79,7 @@ CREATE TABLE public.customers (
 ALTER TABLE public.customers OWNER TO postgres;
 
 --
--- TOC entry 229 (class 1259 OID 33050)
+-- TOC entry 227 (class 1259 OID 33050)
 -- Name: customers_customer_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -52,8 +95,8 @@ CREATE SEQUENCE public.customers_customer_id_seq
 ALTER TABLE public.customers_customer_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3413 (class 0 OID 0)
--- Dependencies: 229
+-- TOC entry 3421 (class 0 OID 0)
+-- Dependencies: 227
 -- Name: customers_customer_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -91,7 +134,7 @@ CREATE SEQUENCE public.delivered_packagings_id_seq
 ALTER TABLE public.delivered_packagings_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3414 (class 0 OID 0)
+-- TOC entry 3422 (class 0 OID 0)
 -- Dependencies: 210
 -- Name: delivered_packagings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -100,7 +143,7 @@ ALTER SEQUENCE public.delivered_packagings_id_seq OWNED BY public.delivered_pack
 
 
 --
--- TOC entry 232 (class 1259 OID 41243)
+-- TOC entry 230 (class 1259 OID 41243)
 -- Name: packaging_adjustments; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -116,7 +159,7 @@ CREATE TABLE public.packaging_adjustments (
 ALTER TABLE public.packaging_adjustments OWNER TO postgres;
 
 --
--- TOC entry 231 (class 1259 OID 41242)
+-- TOC entry 229 (class 1259 OID 41242)
 -- Name: packaging_adjustments_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -132,8 +175,8 @@ CREATE SEQUENCE public.packaging_adjustments_id_seq
 ALTER TABLE public.packaging_adjustments_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3415 (class 0 OID 0)
--- Dependencies: 231
+-- TOC entry 3423 (class 0 OID 0)
+-- Dependencies: 229
 -- Name: packaging_adjustments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -170,7 +213,7 @@ CREATE SEQUENCE public.packagings_packaging_id_seq
 ALTER TABLE public.packagings_packaging_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3416 (class 0 OID 0)
+-- TOC entry 3424 (class 0 OID 0)
 -- Dependencies: 212
 -- Name: packagings_packaging_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -184,7 +227,7 @@ ALTER SEQUENCE public.packagings_packaging_id_seq OWNED BY public.packagings.pac
 --
 
 CREATE TABLE public.product_sales (
-    customer_name character varying NOT NULL,
+    customer_name character varying,
     "createdAt" character varying,
     sales_id bigint NOT NULL,
     "updatedAt" character varying,
@@ -210,7 +253,7 @@ CREATE SEQUENCE public.product_sales_sales_id_seq
 ALTER TABLE public.product_sales_sales_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3417 (class 0 OID 0)
+-- TOC entry 3425 (class 0 OID 0)
 -- Dependencies: 214
 -- Name: product_sales_sales_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -250,7 +293,7 @@ CREATE SEQUENCE public.production_outputs_production_id_seq
 ALTER TABLE public.production_outputs_production_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3418 (class 0 OID 0)
+-- TOC entry 3426 (class 0 OID 0)
 -- Dependencies: 216
 -- Name: production_outputs_production_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -290,7 +333,7 @@ CREATE SEQUENCE public.products_product_id_seq
 ALTER TABLE public.products_product_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3419 (class 0 OID 0)
+-- TOC entry 3427 (class 0 OID 0)
 -- Dependencies: 218
 -- Name: products_product_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -330,7 +373,7 @@ CREATE SEQUENCE public.released_packagings_id_seq
 ALTER TABLE public.released_packagings_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3420 (class 0 OID 0)
+-- TOC entry 3428 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: released_packagings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -369,7 +412,7 @@ CREATE SEQUENCE public.repro_products_id_seq
 ALTER TABLE public.repro_products_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3421 (class 0 OID 0)
+-- TOC entry 3429 (class 0 OID 0)
 -- Dependencies: 222
 -- Name: repro_products_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -408,7 +451,7 @@ CREATE SEQUENCE public.returned_packagings_id_seq
 ALTER TABLE public.returned_packagings_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3422 (class 0 OID 0)
+-- TOC entry 3430 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: returned_packagings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -447,7 +490,7 @@ CREATE SEQUENCE public.sales_items_id_seq
 ALTER TABLE public.sales_items_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3423 (class 0 OID 0)
+-- TOC entry 3431 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: sales_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -456,7 +499,7 @@ ALTER SEQUENCE public.sales_items_id_seq OWNED BY public.sales_items.sales_item_
 
 
 --
--- TOC entry 3217 (class 2604 OID 33054)
+-- TOC entry 3224 (class 2604 OID 33054)
 -- Name: customers customer_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -464,7 +507,7 @@ ALTER TABLE ONLY public.customers ALTER COLUMN customer_id SET DEFAULT nextval('
 
 
 --
--- TOC entry 3208 (class 2604 OID 24787)
+-- TOC entry 3215 (class 2604 OID 24787)
 -- Name: delivered_packagings id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -472,7 +515,7 @@ ALTER TABLE ONLY public.delivered_packagings ALTER COLUMN id SET DEFAULT nextval
 
 
 --
--- TOC entry 3218 (class 2604 OID 41246)
+-- TOC entry 3225 (class 2604 OID 41246)
 -- Name: packaging_adjustments id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -480,7 +523,7 @@ ALTER TABLE ONLY public.packaging_adjustments ALTER COLUMN id SET DEFAULT nextva
 
 
 --
--- TOC entry 3209 (class 2604 OID 24788)
+-- TOC entry 3216 (class 2604 OID 24788)
 -- Name: packagings packaging_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -488,7 +531,7 @@ ALTER TABLE ONLY public.packagings ALTER COLUMN packaging_id SET DEFAULT nextval
 
 
 --
--- TOC entry 3210 (class 2604 OID 24789)
+-- TOC entry 3217 (class 2604 OID 24789)
 -- Name: product_sales sales_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -496,7 +539,7 @@ ALTER TABLE ONLY public.product_sales ALTER COLUMN sales_id SET DEFAULT nextval(
 
 
 --
--- TOC entry 3211 (class 2604 OID 24790)
+-- TOC entry 3218 (class 2604 OID 24790)
 -- Name: production_outputs production_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -504,7 +547,7 @@ ALTER TABLE ONLY public.production_outputs ALTER COLUMN production_id SET DEFAUL
 
 
 --
--- TOC entry 3212 (class 2604 OID 24791)
+-- TOC entry 3219 (class 2604 OID 24791)
 -- Name: products product_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -512,7 +555,7 @@ ALTER TABLE ONLY public.products ALTER COLUMN product_id SET DEFAULT nextval('pu
 
 
 --
--- TOC entry 3213 (class 2604 OID 24792)
+-- TOC entry 3220 (class 2604 OID 24792)
 -- Name: released_packagings id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -520,7 +563,7 @@ ALTER TABLE ONLY public.released_packagings ALTER COLUMN id SET DEFAULT nextval(
 
 
 --
--- TOC entry 3214 (class 2604 OID 24793)
+-- TOC entry 3221 (class 2604 OID 24793)
 -- Name: repro_products id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -528,7 +571,7 @@ ALTER TABLE ONLY public.repro_products ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
--- TOC entry 3215 (class 2604 OID 24794)
+-- TOC entry 3222 (class 2604 OID 24794)
 -- Name: returned_packagings id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -536,7 +579,7 @@ ALTER TABLE ONLY public.returned_packagings ALTER COLUMN id SET DEFAULT nextval(
 
 
 --
--- TOC entry 3216 (class 2604 OID 24795)
+-- TOC entry 3223 (class 2604 OID 24795)
 -- Name: sales_items sales_item_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -544,8 +587,8 @@ ALTER TABLE ONLY public.sales_items ALTER COLUMN sales_item_id SET DEFAULT nextv
 
 
 --
--- TOC entry 3405 (class 0 OID 33051)
--- Dependencies: 230
+-- TOC entry 3412 (class 0 OID 33051)
+-- Dependencies: 228
 -- Data for Name: customers; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -567,7 +610,7 @@ INSERT INTO public.customers VALUES (15, 'NIÑO ARAÑO');
 
 
 --
--- TOC entry 3386 (class 0 OID 24729)
+-- TOC entry 3393 (class 0 OID 24729)
 -- Dependencies: 209
 -- Data for Name: delivered_packagings; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -575,23 +618,30 @@ INSERT INTO public.customers VALUES (15, 'NIÑO ARAÑO');
 
 
 --
--- TOC entry 3407 (class 0 OID 41243)
--- Dependencies: 232
+-- TOC entry 3414 (class 0 OID 41243)
+-- Dependencies: 230
 -- Data for Name: packaging_adjustments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 
 
 --
--- TOC entry 3388 (class 0 OID 24735)
+-- TOC entry 3395 (class 0 OID 24735)
 -- Dependencies: 211
 -- Data for Name: packagings; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+INSERT INTO public.packagings VALUES (8, 'PLASTIC 22 x 33', 7916);
+INSERT INTO public.packagings VALUES (9, 'DWP LINER SACKS', 5963);
+INSERT INTO public.packagings VALUES (12, 'PLASTIC 18.5  x 28', 10812);
+INSERT INTO public.packagings VALUES (10, 'PLASTIC 24 x 36 (FLEXI)', 3239);
+INSERT INTO public.packagings VALUES (11, 'PLASTIC 24 x 36 (LABO)', 1179);
+INSERT INTO public.packagings VALUES (13, 'DWA LINER SACKS', 151);
+INSERT INTO public.packagings VALUES (14, 'PIGLET BOOSTER', 3114);
 
 
 --
--- TOC entry 3390 (class 0 OID 24741)
+-- TOC entry 3397 (class 0 OID 24741)
 -- Dependencies: 213
 -- Data for Name: product_sales; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -642,7 +692,6 @@ INSERT INTO public.product_sales VALUES ('RONNEL MATIBAG', '2023-05-30 16:02:27.
 INSERT INTO public.product_sales VALUES ('CASH SALES', '2023-06-13 14:38:14.904 +08:00', 108, '2023-06-13 14:38:14.904 +08:00', 13);
 INSERT INTO public.product_sales VALUES ('CASH SALES', '2023-09-04 16:12:09.039 +08:00', 441, '2023-09-04 16:12:09.039 +08:00', 13);
 INSERT INTO public.product_sales VALUES ('NIÑO ARAÑO', '2023-06-05 08:35:23.089 +08:00', 88, '2023-06-05 08:35:23.089 +08:00', 15);
-INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-09-11 09:24:34.941 +08:00', 460, '2023-09-11 09:24:34.941 +08:00', NULL);
 INSERT INTO public.product_sales VALUES ('ELMER ANTALLAN', '2023-08-14 16:32:55.181 +08:00', 372, '2023-08-14 16:32:55.181 +08:00', 8);
 INSERT INTO public.product_sales VALUES ('ELMER ANTALLAN', '2023-08-16 16:17:09.303 +08:00', 378, '2023-08-16 16:17:09.303 +08:00', 8);
 INSERT INTO public.product_sales VALUES ('PAUL CAGUING', '2023-05-31 09:32:36.865 +08:00', 75, '2023-05-31 09:32:36.865 +08:00', 7);
@@ -652,6 +701,13 @@ INSERT INTO public.product_sales VALUES ('PAUL CAGUING', '2023-08-26 11:30:44.16
 INSERT INTO public.product_sales VALUES ('PAUL CAGUING', '2023-05-23 16:42:02.043 +08:00', 53, '2023-05-23 16:42:02.043 +08:00', 7);
 INSERT INTO public.product_sales VALUES ('PAUL CAGUING', '2023-08-16 16:57:20.225 +08:00', 379, '2023-08-16 16:57:20.225 +08:00', 7);
 INSERT INTO public.product_sales VALUES ('RONNEL MATIBAG', '2023-06-01 16:37:33.753 +08:00', 84, '2023-06-01 16:37:33.753 +08:00', 2);
+INSERT INTO public.product_sales VALUES ('RAPHAEL DELA CRUZ', '2023-09-13 10:37:47.211 +08:00', 473, '2023-09-13 10:37:47.211 +08:00', 6);
+INSERT INTO public.product_sales VALUES ('ELMER ANTALLAN', '2023-09-12 16:46:53.728 +08:00', 470, '2023-09-12 16:46:53.728 +08:00', 8);
+INSERT INTO public.product_sales VALUES ('KKM', '2023-09-12 11:55:30.569 +08:00', 468, '2023-09-12 11:55:30.569 +08:00', 4);
+INSERT INTO public.product_sales VALUES ('RONNEL MATIBAG', '2023-09-11 16:18:49.832 +08:00', 465, '2023-09-11 16:18:49.832 +08:00', 2);
+INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-09-11 09:24:34.941 +08:00', 460, '2023-09-11 09:24:34.941 +08:00', 1);
+INSERT INTO public.product_sales VALUES (NULL, '2023-09-14T14:04:52.027+08:00', 483, '2023-09-14T14:04:52.027+08:00', 8);
+INSERT INTO public.product_sales VALUES (NULL, '2023-09-15T12:40:47.643+08:00', 487, '2023-09-15T12:40:47.643+08:00', 13);
 INSERT INTO public.product_sales VALUES ('LAKAL', '2023-06-14 08:21:01.110 +08:00', 114, '2023-06-14 08:21:01.110 +08:00', NULL);
 INSERT INTO public.product_sales VALUES ('CLDS CORPORATION', '2023-06-14 13:38:25.485 +08:00', 117, '2023-06-14 13:38:25.485 +08:00', NULL);
 INSERT INTO public.product_sales VALUES ('TONY HERNANDEZ', '2023-06-14 08:13:36.588 +08:00', 112, '2023-06-14 08:13:36.588 +08:00', 3);
@@ -845,9 +901,19 @@ INSERT INTO public.product_sales VALUES ('RONNEL MATIBAG', '2023-08-22 10:53:42.
 INSERT INTO public.product_sales VALUES ('RONNEL MATIBAG', '2023-08-23 08:35:23.896 +08:00', 396, '2023-08-23 08:35:23.896 +08:00', 2);
 INSERT INTO public.product_sales VALUES ('TONY HERNANDEZ', '2023-08-18 13:10:14.328 +08:00', 382, '2023-08-18 13:10:14.328 +08:00', 3);
 INSERT INTO public.product_sales VALUES ('TONY HERNANDEZ', '2023-08-26 11:11:46.947 +08:00', 414, '2023-08-26 11:11:46.947 +08:00', 3);
-INSERT INTO public.product_sales VALUES ('JULIUS JASA', '2023-09-11 09:25:02.247 +08:00', 461, '2023-09-11 09:25:02.247 +08:00', NULL);
+INSERT INTO public.product_sales VALUES ('AVENIDA VERDE', '2023-09-13 13:34:16.145 +08:00', 474, '2023-09-13 13:34:16.145 +08:00', 11);
+INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-09-12 09:38:26.419 +08:00', 466, '2023-09-12 09:38:26.419 +08:00', 1);
+INSERT INTO public.product_sales VALUES ('JULIUS JASA', '2023-09-11 09:25:02.247 +08:00', 461, '2023-09-11 09:25:02.247 +08:00', 9);
+INSERT INTO public.product_sales VALUES (NULL, '2023-09-15T10:09:47.465+08:00', 484, '2023-09-15T10:09:47.465+08:00', 7);
+INSERT INTO public.product_sales VALUES (NULL, '2023-09-15T13:29:02.068+08:00', 488, '2023-09-15T13:29:02.068+08:00', 5);
 INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-05-19 10:09:33.982 +08:00', 32, '2023-05-19 10:09:33.982 +08:00', 1);
 INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-09-08 08:53:36.377 +08:00', 456, '2023-09-08 08:53:36.377 +08:00', 1);
+INSERT INTO public.product_sales VALUES ('TONY HERNANDEZ', '2023-09-13 16:26:15.644 +08:00', 475, '2023-09-13 16:26:15.644 +08:00', 3);
+INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-09-13 10:07:52.146 +08:00', 471, '2023-09-13 10:07:52.146 +08:00', 1);
+INSERT INTO public.product_sales VALUES ('PAUL CAGUING', '2023-09-12 09:39:11.024 +08:00', 467, '2023-09-12 09:39:11.024 +08:00', 7);
+INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-09-11 11:34:41.000 +08:00', 462, '2023-09-11 11:34:41.000 +08:00', 1);
+INSERT INTO public.product_sales VALUES (NULL, '2023-09-15T10:10:13.458+08:00', 485, '2023-09-15T10:10:13.458+08:00', 1);
+INSERT INTO public.product_sales VALUES (NULL, '2023-09-15T13:41:14.551+08:00', 489, '2023-09-15T13:41:14.551+08:00', 5);
 INSERT INTO public.product_sales VALUES ('ELMER ANTALLAN', '2023-08-24 13:52:22.198 +08:00', 403, '2023-08-24 13:52:22.198 +08:00', 8);
 INSERT INTO public.product_sales VALUES ('ELMER ANTALLAN', '2023-08-31 16:22:44.663 +08:00', 429, '2023-08-31 16:22:44.663 +08:00', 8);
 INSERT INTO public.product_sales VALUES ('CLDS CORP.', '2023-09-05 10:37:57.632 +08:00', 443, '2023-09-05 10:37:57.632 +08:00', 5);
@@ -911,6 +977,7 @@ INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-08-23 10:51:15.855
 INSERT INTO public.product_sales VALUES ('PAUL CAGUING', '2023-09-02 10:22:14.908 +08:00', 435, '2023-09-02 10:22:14.908 +08:00', 7);
 INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-09-08 14:50:03.357 +08:00', 457, '2023-09-08 14:50:03.357 +08:00', 1);
 INSERT INTO public.product_sales VALUES ('RONNEL MATIBAG', '2023-09-08 14:50:18.336 +08:00', 458, '2023-09-08 14:50:18.336 +08:00', 2);
+INSERT INTO public.product_sales VALUES ('AVENIDA VERDE', '2023-09-11 15:52:57.706 +08:00', 463, '2023-09-11 15:52:57.706 +08:00', 11);
 INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-07-18 09:49:01.457 +08:00', 279, '2023-07-18 09:49:01.457 +08:00', 1);
 INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-07-18 09:49:20.384 +08:00', 280, '2023-07-18 09:49:20.384 +08:00', 1);
 INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-07-18 11:26:17.778 +08:00', 283, '2023-07-18 11:26:17.778 +08:00', 1);
@@ -957,10 +1024,15 @@ INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-08-26 11:13:02.781
 INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-08-30 10:26:47.857 +08:00', 423, '2023-08-30 10:26:47.857 +08:00', 1);
 INSERT INTO public.product_sales VALUES ('NOEL AFRICA', '2023-09-06 12:55:42.415 +08:00', 449, '2023-09-06 12:55:42.415 +08:00', 1);
 INSERT INTO public.product_sales VALUES ('AVENIDA VERDE', '2023-09-09 08:17:07.214 +08:00', 459, '2023-09-09 08:17:07.214 +08:00', 11);
+INSERT INTO public.product_sales VALUES (NULL, '2023-09-14T10:14:06.693+08:00', 477, '2023-09-14T10:14:06.693+08:00', 1);
+INSERT INTO public.product_sales VALUES ('CLDS CORP.', '2023-09-13 10:08:05.345 +08:00', 472, '2023-09-13 10:08:05.345 +08:00', 5);
+INSERT INTO public.product_sales VALUES ('RONNEL MATIBAG', '2023-09-12 16:26:39.618 +08:00', 469, '2023-09-12 16:26:39.618 +08:00', 2);
+INSERT INTO public.product_sales VALUES (NULL, '2023-09-15T12:37:10.947+08:00', 486, '2023-09-15T12:37:10.947+08:00', 1);
+INSERT INTO public.product_sales VALUES (NULL, '2023-09-15T13:42:13.149+08:00', 490, '2023-09-15T13:42:13.149+08:00', 4);
 
 
 --
--- TOC entry 3392 (class 0 OID 24747)
+-- TOC entry 3399 (class 0 OID 24747)
 -- Dependencies: 215
 -- Data for Name: production_outputs; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1096,10 +1168,15 @@ INSERT INTO public.production_outputs VALUES (130, 21, 100, 0, '09/07/2023');
 INSERT INTO public.production_outputs VALUES (131, 21, 200, 0, '09/08/2023');
 INSERT INTO public.production_outputs VALUES (132, 21, 200, 0, '09/09/2023');
 INSERT INTO public.production_outputs VALUES (133, 23, 190, 1, '09/09/2023');
+INSERT INTO public.production_outputs VALUES (134, 21, 338, 1, '09/11/2023');
+INSERT INTO public.production_outputs VALUES (135, 14, 944, 0, '09/11/2023');
+INSERT INTO public.production_outputs VALUES (136, 2, 840, 0, '09/13/2023');
+INSERT INTO public.production_outputs VALUES (137, 2, 146, 0, '09/14/2023');
+INSERT INTO public.production_outputs VALUES (138, 1, 1400, 0, '09/14/2023');
 
 
 --
--- TOC entry 3394 (class 0 OID 24753)
+-- TOC entry 3401 (class 0 OID 24753)
 -- Dependencies: 217
 -- Data for Name: products; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1128,15 +1205,17 @@ INSERT INTO public.products VALUES (4, 'KITTY WITTY (PLASTIC)', 202, 20);
 
 
 --
--- TOC entry 3396 (class 0 OID 24759)
+-- TOC entry 3403 (class 0 OID 24759)
 -- Dependencies: 219
 -- Data for Name: released_packagings; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+INSERT INTO public.released_packagings VALUES (67, 10, 2039, '09/06/2023', 'for kitty witty and chm-a liner');
+INSERT INTO public.released_packagings VALUES (68, 12, 869, '09/11/2023', 'for chm-p');
 
 
 --
--- TOC entry 3398 (class 0 OID 24765)
+-- TOC entry 3405 (class 0 OID 24765)
 -- Dependencies: 221
 -- Data for Name: repro_products; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1161,7 +1240,7 @@ INSERT INTO public.repro_products VALUES (17, 4, 1, 'wrecked packaging');
 
 
 --
--- TOC entry 3400 (class 0 OID 24771)
+-- TOC entry 3407 (class 0 OID 24771)
 -- Dependencies: 223
 -- Data for Name: returned_packagings; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1169,7 +1248,7 @@ INSERT INTO public.repro_products VALUES (17, 4, 1, 'wrecked packaging');
 
 
 --
--- TOC entry 3402 (class 0 OID 24777)
+-- TOC entry 3409 (class 0 OID 24777)
 -- Dependencies: 225
 -- Data for Name: sales_items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1831,11 +1910,57 @@ INSERT INTO public.sales_items VALUES (460, 2, 6, 783);
 INSERT INTO public.sales_items VALUES (461, 1, 51, 784);
 INSERT INTO public.sales_items VALUES (461, 2, 25, 785);
 INSERT INTO public.sales_items VALUES (461, 6, 11, 786);
+INSERT INTO public.sales_items VALUES (462, 1, 30, 787);
+INSERT INTO public.sales_items VALUES (463, 24, 50, 788);
+INSERT INTO public.sales_items VALUES (463, 23, 52, 790);
+INSERT INTO public.sales_items VALUES (465, 1, 18, 792);
+INSERT INTO public.sales_items VALUES (465, 2, 4, 793);
+INSERT INTO public.sales_items VALUES (463, 8, 50, 789);
+INSERT INTO public.sales_items VALUES (466, 1, 35, 794);
+INSERT INTO public.sales_items VALUES (466, 2, 10, 795);
+INSERT INTO public.sales_items VALUES (467, 1, 50, 796);
+INSERT INTO public.sales_items VALUES (467, 2, 10, 797);
+INSERT INTO public.sales_items VALUES (467, 3, 3, 798);
+INSERT INTO public.sales_items VALUES (468, 21, 595, 799);
+INSERT INTO public.sales_items VALUES (468, 20, 492, 800);
+INSERT INTO public.sales_items VALUES (469, 1, 18, 801);
+INSERT INTO public.sales_items VALUES (470, 1, 50, 802);
+INSERT INTO public.sales_items VALUES (470, 2, 30, 803);
+INSERT INTO public.sales_items VALUES (470, 6, 20, 804);
+INSERT INTO public.sales_items VALUES (471, 1, 25, 805);
+INSERT INTO public.sales_items VALUES (471, 2, 2, 806);
+INSERT INTO public.sales_items VALUES (471, 6, 10, 807);
+INSERT INTO public.sales_items VALUES (472, 1, 300, 808);
+INSERT INTO public.sales_items VALUES (473, 4, 10, 809);
+INSERT INTO public.sales_items VALUES (473, 7, 40, 810);
+INSERT INTO public.sales_items VALUES (474, 24, 170, 811);
+INSERT INTO public.sales_items VALUES (474, 8, 50, 812);
+INSERT INTO public.sales_items VALUES (475, 1, 20, 813);
+INSERT INTO public.sales_items VALUES (475, 2, 1, 814);
+INSERT INTO public.sales_items VALUES (475, 3, 5, 815);
+INSERT INTO public.sales_items VALUES (477, 2, 1, 817);
+INSERT INTO public.sales_items VALUES (483, 1, 70, 819);
+INSERT INTO public.sales_items VALUES (483, 6, 10, 820);
+INSERT INTO public.sales_items VALUES (483, 2, 10, 821);
+INSERT INTO public.sales_items VALUES (477, 1, 23, 816);
+INSERT INTO public.sales_items VALUES (484, 1, 105, 822);
+INSERT INTO public.sales_items VALUES (484, 2, 10, 823);
+INSERT INTO public.sales_items VALUES (485, 1, 30, 824);
+INSERT INTO public.sales_items VALUES (485, 2, 10, 825);
+INSERT INTO public.sales_items VALUES (486, 1, 30, 826);
+INSERT INTO public.sales_items VALUES (487, 1, 1, 827);
+INSERT INTO public.sales_items VALUES (487, 2, 1, 828);
+INSERT INTO public.sales_items VALUES (488, 1, 150, 829);
+INSERT INTO public.sales_items VALUES (489, 1, 200, 830);
+INSERT INTO public.sales_items VALUES (490, 15, 500, 831);
+INSERT INTO public.sales_items VALUES (490, 1, 100, 832);
+INSERT INTO public.sales_items VALUES (490, 14, 300, 833);
+INSERT INTO public.sales_items VALUES (490, 28, 300, 834);
 
 
 --
--- TOC entry 3424 (class 0 OID 0)
--- Dependencies: 229
+-- TOC entry 3432 (class 0 OID 0)
+-- Dependencies: 227
 -- Name: customers_customer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1843,7 +1968,7 @@ SELECT pg_catalog.setval('public.customers_customer_id_seq', 15, true);
 
 
 --
--- TOC entry 3425 (class 0 OID 0)
+-- TOC entry 3433 (class 0 OID 0)
 -- Dependencies: 210
 -- Name: delivered_packagings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1852,8 +1977,8 @@ SELECT pg_catalog.setval('public.delivered_packagings_id_seq', 7, true);
 
 
 --
--- TOC entry 3426 (class 0 OID 0)
--- Dependencies: 231
+-- TOC entry 3434 (class 0 OID 0)
+-- Dependencies: 229
 -- Name: packaging_adjustments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1861,34 +1986,34 @@ SELECT pg_catalog.setval('public.packaging_adjustments_id_seq', 1, false);
 
 
 --
--- TOC entry 3427 (class 0 OID 0)
+-- TOC entry 3435 (class 0 OID 0)
 -- Dependencies: 212
 -- Name: packagings_packaging_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.packagings_packaging_id_seq', 8, false);
+SELECT pg_catalog.setval('public.packagings_packaging_id_seq', 14, true);
 
 
 --
--- TOC entry 3428 (class 0 OID 0)
+-- TOC entry 3436 (class 0 OID 0)
 -- Dependencies: 214
 -- Name: product_sales_sales_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.product_sales_sales_id_seq', 461, true);
+SELECT pg_catalog.setval('public.product_sales_sales_id_seq', 490, true);
 
 
 --
--- TOC entry 3429 (class 0 OID 0)
+-- TOC entry 3437 (class 0 OID 0)
 -- Dependencies: 216
 -- Name: production_outputs_production_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.production_outputs_production_id_seq', 133, true);
+SELECT pg_catalog.setval('public.production_outputs_production_id_seq', 138, true);
 
 
 --
--- TOC entry 3430 (class 0 OID 0)
+-- TOC entry 3438 (class 0 OID 0)
 -- Dependencies: 218
 -- Name: products_product_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1897,16 +2022,16 @@ SELECT pg_catalog.setval('public.products_product_id_seq', 28, true);
 
 
 --
--- TOC entry 3431 (class 0 OID 0)
+-- TOC entry 3439 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: released_packagings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.released_packagings_id_seq', 66, true);
+SELECT pg_catalog.setval('public.released_packagings_id_seq', 68, true);
 
 
 --
--- TOC entry 3432 (class 0 OID 0)
+-- TOC entry 3440 (class 0 OID 0)
 -- Dependencies: 222
 -- Name: repro_products_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1915,7 +2040,7 @@ SELECT pg_catalog.setval('public.repro_products_id_seq', 17, true);
 
 
 --
--- TOC entry 3433 (class 0 OID 0)
+-- TOC entry 3441 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: returned_packagings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1924,16 +2049,16 @@ SELECT pg_catalog.setval('public.returned_packagings_id_seq', 15, true);
 
 
 --
--- TOC entry 3434 (class 0 OID 0)
+-- TOC entry 3442 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: sales_items_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.sales_items_id_seq', 786, true);
+SELECT pg_catalog.setval('public.sales_items_id_seq', 834, true);
 
 
 --
--- TOC entry 3220 (class 2606 OID 24798)
+-- TOC entry 3227 (class 2606 OID 24798)
 -- Name: delivered_packagings delivered_packagings_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1942,7 +2067,7 @@ ALTER TABLE ONLY public.delivered_packagings
 
 
 --
--- TOC entry 3223 (class 2606 OID 24800)
+-- TOC entry 3230 (class 2606 OID 24800)
 -- Name: packagings packagings_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1951,7 +2076,7 @@ ALTER TABLE ONLY public.packagings
 
 
 --
--- TOC entry 3225 (class 2606 OID 24802)
+-- TOC entry 3232 (class 2606 OID 24802)
 -- Name: product_sales product_sales_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1960,7 +2085,7 @@ ALTER TABLE ONLY public.product_sales
 
 
 --
--- TOC entry 3227 (class 2606 OID 24804)
+-- TOC entry 3234 (class 2606 OID 24804)
 -- Name: production_outputs production_outputs_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1969,7 +2094,7 @@ ALTER TABLE ONLY public.production_outputs
 
 
 --
--- TOC entry 3229 (class 2606 OID 24806)
+-- TOC entry 3236 (class 2606 OID 24806)
 -- Name: products products_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1978,7 +2103,7 @@ ALTER TABLE ONLY public.products
 
 
 --
--- TOC entry 3231 (class 2606 OID 24808)
+-- TOC entry 3238 (class 2606 OID 24808)
 -- Name: released_packagings released_packagings_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1987,7 +2112,7 @@ ALTER TABLE ONLY public.released_packagings
 
 
 --
--- TOC entry 3233 (class 2606 OID 24810)
+-- TOC entry 3240 (class 2606 OID 24810)
 -- Name: repro_products repro_products_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1996,7 +2121,7 @@ ALTER TABLE ONLY public.repro_products
 
 
 --
--- TOC entry 3235 (class 2606 OID 24812)
+-- TOC entry 3242 (class 2606 OID 24812)
 -- Name: returned_packagings returned_packagings_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2005,7 +2130,7 @@ ALTER TABLE ONLY public.returned_packagings
 
 
 --
--- TOC entry 3237 (class 2606 OID 24814)
+-- TOC entry 3244 (class 2606 OID 24814)
 -- Name: sales_items sales_items_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2014,7 +2139,7 @@ ALTER TABLE ONLY public.sales_items
 
 
 --
--- TOC entry 3238 (class 1259 OID 41249)
+-- TOC entry 3245 (class 1259 OID 41249)
 -- Name: packaging_adjustments_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2022,7 +2147,7 @@ CREATE INDEX packaging_adjustments_id_idx ON public.packaging_adjustments USING 
 
 
 --
--- TOC entry 3221 (class 1259 OID 24815)
+-- TOC entry 3228 (class 1259 OID 24815)
 -- Name: packagings_packaging_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2030,7 +2155,7 @@ CREATE INDEX packagings_packaging_id_idx ON public.packagings USING btree (packa
 
 
 --
--- TOC entry 3239 (class 2606 OID 24817)
+-- TOC entry 3246 (class 2606 OID 24817)
 -- Name: delivered_packagings delivered_packagings_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2039,7 +2164,7 @@ ALTER TABLE ONLY public.delivered_packagings
 
 
 --
--- TOC entry 3246 (class 2606 OID 41250)
+-- TOC entry 3253 (class 2606 OID 41250)
 -- Name: packaging_adjustments packaging_adjustments_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2048,7 +2173,7 @@ ALTER TABLE ONLY public.packaging_adjustments
 
 
 --
--- TOC entry 3240 (class 2606 OID 24822)
+-- TOC entry 3247 (class 2606 OID 24822)
 -- Name: production_outputs production_outputs_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2057,7 +2182,7 @@ ALTER TABLE ONLY public.production_outputs
 
 
 --
--- TOC entry 3241 (class 2606 OID 24827)
+-- TOC entry 3248 (class 2606 OID 24827)
 -- Name: released_packagings released_packagings_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2066,7 +2191,7 @@ ALTER TABLE ONLY public.released_packagings
 
 
 --
--- TOC entry 3242 (class 2606 OID 24832)
+-- TOC entry 3249 (class 2606 OID 24832)
 -- Name: repro_products repro_products_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2075,7 +2200,7 @@ ALTER TABLE ONLY public.repro_products
 
 
 --
--- TOC entry 3243 (class 2606 OID 24837)
+-- TOC entry 3250 (class 2606 OID 24837)
 -- Name: returned_packagings returned_packagings_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2084,7 +2209,7 @@ ALTER TABLE ONLY public.returned_packagings
 
 
 --
--- TOC entry 3244 (class 2606 OID 24842)
+-- TOC entry 3251 (class 2606 OID 24842)
 -- Name: sales_items sales_items_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2093,7 +2218,7 @@ ALTER TABLE ONLY public.sales_items
 
 
 --
--- TOC entry 3245 (class 2606 OID 24847)
+-- TOC entry 3252 (class 2606 OID 24847)
 -- Name: sales_items sales_items_fk_1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2101,7 +2226,7 @@ ALTER TABLE ONLY public.sales_items
     ADD CONSTRAINT sales_items_fk_1 FOREIGN KEY (product_id) REFERENCES public.products(product_id);
 
 
--- Completed on 2023-09-11 10:21:29
+-- Completed on 2023-09-15 16:39:13
 
 --
 -- PostgreSQL database dump complete

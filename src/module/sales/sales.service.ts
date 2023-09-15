@@ -74,6 +74,32 @@ export class SalesService {
     });
   }
 
+  // Find the sales volume for the last 7 days
+  async findSalesThisWeek() {
+    const queryResult = await this.salesRepository
+      .createQueryBuilder('sales')
+      .select([
+        `sales."createdAt"::date as sales_date`,
+        `sum(sales_items.quantity * products.packaging_size)`,
+      ])
+      .leftJoin('sales.sales_items', 'sales_items')
+      .leftJoin('sales_items.product', 'products')
+      .orderBy('sales_date', 'DESC')
+      .groupBy('sales_date')
+      .limit(7)
+      .getRawMany();
+
+
+    // Forward the result
+    return queryResult.map(({ sales_date, sum }) => {
+      return {
+        sales_date: new Date(sales_date).toLocaleDateString(),
+        sum: sum,
+      };
+    });
+      
+  }
+
   // Create new sales instance
   async createSales(orderDetails: CreateOrderParams) {
     const newSales = this.salesRepository.save({

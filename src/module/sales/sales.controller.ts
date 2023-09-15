@@ -16,6 +16,11 @@ export class SalesController {
     return this.salesService.findSalesPerYear(currentYear);
   }
 
+  @Get('salesthisweek')
+  findSalesThisWeek(){
+    return this.salesService.findSalesThisWeek()
+  }
+
   @Post()
   createSales(@Body() createOrderDto: CreateOrderDto) {
     return this.salesService.createSales(createOrderDto);

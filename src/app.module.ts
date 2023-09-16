@@ -9,7 +9,7 @@ import { SalesModule } from './module/sales/sales.module';
 import { SalesEntities } from './entitities/sales.entities';
 import { SalesItemsEntities } from './entitities/sales-items.entities';
 import { CustomerModule } from './module/customer/customer.module';
-import { CustomerEntites } from './entitities/customer.entities';
+import { CustomerEntities } from './entitities/customer.entities';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { CustomerEntites } from './entitities/customer.entities';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [ProductEntities, SalesEntities, SalesItemsEntities, CustomerEntites],
+      entities: [ProductEntities, SalesEntities, SalesItemsEntities, CustomerEntities],
       synchronize: false,
     }),
     ProductModule,

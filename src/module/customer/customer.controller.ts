@@ -8,4 +8,9 @@ export class CustomerController {
   findCustomers() {
    return this.customerService.findCustomer();
   }
+
+  @Get('totalvolumebought')
+  findCustomerVolume(){
+      return this.customerService.findCustomerVolume()
+  }
 }

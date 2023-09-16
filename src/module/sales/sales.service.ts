@@ -89,7 +89,6 @@ export class SalesService {
       .limit(7)
       .getRawMany();
 
-
     // Forward the result
     return queryResult.map(({ sales_date, sum }) => {
       return {
@@ -97,7 +96,6 @@ export class SalesService {
         sum: sum,
       };
     });
-      
   }
 
   // Create new sales instance

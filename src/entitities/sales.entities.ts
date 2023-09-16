@@ -1,13 +1,24 @@
-import { Column, PrimaryGeneratedColumn, Entity, OneToMany, JoinColumn, CreateDateColumn, UpdateDateColumn, VirtualColumn} from 'typeorm';
+import {
+  PrimaryGeneratedColumn,
+  Entity,
+  OneToMany,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  VirtualColumn,
+  ManyToOne,
+} from 'typeorm';
 import { SalesItemsEntities } from './sales-items.entities';
+import { CustomerEntities } from './customer.entities';
 
 @Entity('product_sales')
 export class SalesEntities {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   sales_id: number;
 
-  @Column()
-  customer_id: number;
+  @ManyToOne(()=> CustomerEntities)
+  @JoinColumn({name: 'customer_id'})
+  customer : CustomerEntities
 
   @VirtualColumn({
     query: (alias) =>

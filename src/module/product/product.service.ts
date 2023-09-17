@@ -2,12 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProductEntities } from 'src/entitities/product.entities';
+import { CreateProductParams } from 'src/utils/types/CreateProduct.types';
+import { CreateProductionParams } from 'src/utils/types/CreateProduction.types';
+import { ProductionOutputEntities } from 'src/entitities/production-outputs.entities';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(ProductEntities)
     private productRepository: Repository<ProductEntities>,
+    @InjectRepository(ProductionOutputEntities)
+    private productionOutputRepository: Repository<ProductionOutputEntities>,
   ) {}
 
   // Find products data
@@ -46,5 +51,23 @@ export class ProductService {
       .orderBy('total_sold', 'DESC')
       .limit(5)
       .getRawMany();
+  }
+
+  // Create new product
+  createProduct(
+    createProductParams: CreateProductParams,
+  ): Promise<ProductEntities> {
+    return this.productRepository.save(createProductParams);
+  }
+
+  // Create new production instance -- Added stocks per f.g
+  createProduction(
+    createProductionParams: CreateProductionParams,
+  ): Promise<ProductionOutputEntities> {
+    const newProduction = this.productionOutputRepository.create({
+      ...createProductionParams,
+      production_date: new Date(createProductionParams.production_date),
+    });
+    return this.productionOutputRepository.save(newProduction);
   }
 }

@@ -6,6 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { SalesItemsEntities } from './sales-items.entities';
+import { ProductionOutputEntities } from './production-outputs.entities';
 
 @Entity('products')
 export class ProductEntities {
@@ -24,4 +25,8 @@ export class ProductEntities {
   @OneToMany(() => SalesItemsEntities, (sales) => sales.product)
   @JoinColumn({ name: 'product_id' })
   items: SalesItemsEntities[];
+
+  @OneToMany(() => ProductionOutputEntities, (props) => props.product)
+  @JoinColumn({ name: 'production_id' })
+  production: ProductionOutputEntities[];
 }

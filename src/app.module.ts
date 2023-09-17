@@ -10,6 +10,7 @@ import { SalesEntities } from './entitities/sales.entities';
 import { SalesItemsEntities } from './entitities/sales-items.entities';
 import { CustomerModule } from './module/customer/customer.module';
 import { CustomerEntities } from './entitities/customer.entities';
+import { ProductionOutputEntities } from './entitities/production-outputs.entities';
 
 @Module({
   imports: [
@@ -20,14 +21,20 @@ import { CustomerEntities } from './entitities/customer.entities';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [ProductEntities, SalesEntities, SalesItemsEntities, CustomerEntities],
-      synchronize: false,
+      entities: [
+        ProductEntities,
+        SalesEntities,
+        SalesItemsEntities,
+        CustomerEntities,
+        ProductionOutputEntities,
+      ],
+      synchronize: true,
     }),
     ProductModule,
     SalesModule,
     CustomerModule,
   ],
   controllers: [AppController],
-  providers: [AppService]
+  providers: [AppService],
 })
 export class AppModule {}

@@ -107,16 +107,16 @@ export class SalesService {
     });
 
     // Iterate list from sales_items type from OrderItem request body
-    orderDetails.sales_items.map(async (values) => {
-      const newSalesItems = this.salesItemsRepository.create({
-        product_id: values.product_id,
-        quantity: values.quantity,
-        sales: {
-          sales_id: (await newSales).sales_id,
-        },
-      });
-      await this.salesItemsRepository.save(newSalesItems);
-    });
+    // orderDetails.sales_items.map(async (values) => {
+    //   const newSalesItems = this.salesItemsRepository.create({
+    //     product_id: values.product_id,
+    //     quantity: values.quantity,
+    //     sales: {
+    //       sales_id: (await newSales).sales_id,
+    //     },
+    //   });
+    //   await this.salesItemsRepository.save(newSalesItems);
+    // });
     return newSales;
   }
 }

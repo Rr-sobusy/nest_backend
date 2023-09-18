@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   VirtualColumn,
   ManyToOne,
+  Column
 } from 'typeorm';
 import { SalesItemsEntities } from './sales-items.entities';
 import { CustomerEntities } from './customer.entities';
@@ -16,9 +17,13 @@ export class SalesEntities {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   sales_id: number;
 
+  @Column()
+  @JoinColumn({name: 'customer_id'})
+  customer_id : number
+
   @ManyToOne(()=> CustomerEntities)
   @JoinColumn({name: 'customer_id'})
-  customer : CustomerEntities
+  customer:CustomerEntities
 
   @VirtualColumn({
     query: (alias) =>

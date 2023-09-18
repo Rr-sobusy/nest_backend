@@ -53,6 +53,15 @@ export class ProductService {
       .getRawMany();
   }
 
+  // Find all production datas
+  findProductions(){
+      return this.productionOutputRepository.find({
+              relations : {
+                  product: true
+              }
+      })
+  }
+
   // Create new product
   createProduct(
     createProductParams: CreateProductParams,

@@ -12,6 +12,11 @@ export class ProductController {
     return this.productService.findProducts();
   }
 
+  @Get('productiondatas')
+  findProductions(){
+    return this.productService.findProductions()
+  }
+
   @Post()
   createProduct(@Body() createProductDto: CreateProductDto) {
     return this.productService.createProduct(createProductDto);

@@ -28,7 +28,7 @@ import { ProductionOutputEntities } from './entitities/production-outputs.entiti
         CustomerEntities,
         ProductionOutputEntities,
       ],
-      synchronize: false,
+      synchronize: true,
     }),
     ProductModule,
     SalesModule,

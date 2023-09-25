@@ -102,8 +102,20 @@ export class SalesService {
   findBestCustomerForMonth() {
     const queryResult = this.salesRepository
       .createQueryBuilder('sales')
+      .select([
+        `sum(sales_items.quantity * products.packaging_size)`,
+        `customers.customer_id`,
+        `customers.customer_name`,
+        `sales."createdAt"::date as sales_date`,
+      ])
       .innerJoin('sales.sales_items', 'sales_items')
+      .innerJoin('sales_items.product', 'products')
+      .innerJoin('sales.customer', 'customers')
+      .where(`extract(month from sales."createdAt"::date) = '09'`)
+      .groupBy('customers.customer_id')
+      .addGroupBy(`sales_date`)
       .getRawMany();
+    return queryResult;
   }
 
   // Create new sales instance

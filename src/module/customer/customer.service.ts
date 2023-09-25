@@ -34,4 +34,27 @@ export class CustomerService {
       .orderBy('total_bought', 'DESC')
       .getRawMany();
   }
+
+  // Get three of best customers on current month
+  findBestCustomerForMonth(currentYear:number) {
+    return this.customerRepository
+      .createQueryBuilder('customer')
+      .select([
+        `sum(sales_items.quantity * products.packaging_size) as total_bought`,
+        `customer."customer_id"`,
+        `customer."customer_name"`
+      ])
+      .innerJoin('customer.sales', 'product_sales')
+      .innerJoin('product_sales.sales_items', 'sales_items')
+      .innerJoin('sales_items.product', 'products')
+      .where(`extract(month from product_sales."createdAt"::date) = extract(month from now()::date) 
+      and extract(year from product_sales."createdAt"::date) = :currentYear`, {
+        currentYear : currentYear
+      })
+      
+      .groupBy('customer.customer_id')
+      .orderBy('total_bought', 'DESC')
+      .limit(3)
+      .getRawMany();
+  }
 }

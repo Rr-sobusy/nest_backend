@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get , Param} from '@nestjs/common';
 import { CustomerService } from './customer.service';
 @Controller('customers')
 export class CustomerController {
@@ -12,5 +12,10 @@ export class CustomerController {
   @Get('totalvolumebought')
   findCustomerVolume(){
       return this.customerService.findCustomerVolume()
+  }
+
+  @Get('bestforentiremonth/:currentYear')
+  findCustomerForMonth(@Param('currentYear') currentYear:number){
+        return this.customerService.findBestCustomerForMonth(currentYear)
   }
 }

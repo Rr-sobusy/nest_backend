@@ -52,6 +52,10 @@ export class ProductService {
       .limit(5)
       .getRawMany();
   }
+    // Get best sold products in entire week
+    findBestProductForWeek(){
+
+  }
 
   // Find all production datas
   findProductions(){

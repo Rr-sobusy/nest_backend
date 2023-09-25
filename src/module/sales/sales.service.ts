@@ -98,6 +98,14 @@ export class SalesService {
     });
   }
 
+  // Find the three best customer for entire month
+  findBestCustomerForMonth() {
+    const queryResult = this.salesRepository
+      .createQueryBuilder('sales')
+      .innerJoin('sales.sales_items', 'sales_items')
+      .getRawMany();
+  }
+
   // Create new sales instance
   async createSales(orderDetails: CreateOrderParams) {
     const newSales = this.salesRepository.save({

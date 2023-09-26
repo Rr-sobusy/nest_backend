@@ -52,18 +52,16 @@ export class ProductService {
       .limit(5)
       .getRawMany();
   }
-    // Get best sold products in entire week
-    findBestProductForWeek(){
-
-  }
+  // Get best sold products in entire week
+  findBestProductForWeek() {}
 
   // Find all production datas
-  findProductions(){
-      return this.productionOutputRepository.find({
-              relations : {
-                  product: true
-              }
-      })
+  findProductions() {
+    return this.productionOutputRepository.find({
+      relations: {
+        product: true,
+      },
+    });
   }
 
   // Create new product

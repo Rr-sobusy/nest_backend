@@ -19,6 +19,9 @@ import {
     product : ProductEntities
 
     @Column()
+    product_id : number
+
+    @Column()
     output_quantity : number;
 
     @Column()

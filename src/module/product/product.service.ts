@@ -59,8 +59,11 @@ export class ProductService {
   findProductions() {
     return this.productionOutputRepository.find({
       relations: {
-        product: true,
+          product : true
       },
+      order :{
+        production_id : "DESC"
+      }
     });
   }
 

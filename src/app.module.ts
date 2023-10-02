@@ -11,6 +11,11 @@ import { SalesItemsEntities } from './entitities/sales-items.entities';
 import { CustomerModule } from './module/customer/customer.module';
 import { CustomerEntities } from './entitities/customer.entities';
 import { ProductionOutputEntities } from './entitities/production-outputs.entities';
+import { PackagingModule } from './module/packaging/packaging.module';
+import { PackagingEntities } from 'src/entitities/packaging.entities';
+import { DeliveredPackagingEntities } from 'src/entitities/packaging-deliveries.entities';
+import { ReleasedPackagingEntities } from 'src/entitities/packaging-released.entities';
+import { ReturnedPackagingEntities } from 'src/entitities/packaging-returned.entities';
 
 @Module({
   imports: [
@@ -27,12 +32,17 @@ import { ProductionOutputEntities } from './entitities/production-outputs.entiti
         SalesItemsEntities,
         CustomerEntities,
         ProductionOutputEntities,
+        PackagingEntities,
+        ReleasedPackagingEntities,
+        DeliveredPackagingEntities,
+        ReturnedPackagingEntities
       ],
       synchronize: false,
     }),
     ProductModule,
     SalesModule,
     CustomerModule,
+    PackagingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

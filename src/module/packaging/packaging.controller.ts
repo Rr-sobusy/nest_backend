@@ -19,7 +19,7 @@ export class PackagingController {
   }
 
   @Get('returned')
-  findReturnedPackaging(){
-    return this.packagingService.findReturnedPackagings()
+  findReturnedPackaging() {
+    return this.packagingService.findReturnedPackagings();
   }
 }

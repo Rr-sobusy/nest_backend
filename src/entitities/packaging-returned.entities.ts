@@ -22,7 +22,7 @@ import {
         quantity_returned: number
 
         @Column()
-        date_returned: Date
+        returned_date: Date
 
         @ManyToOne(()=>PackagingEntities)
         @JoinColumn({name:'packaging_id'})

@@ -5,6 +5,7 @@ import {
   OneToMany,
   JoinColumn,
   ManyToMany,
+  ManyToOne,
 } from 'typeorm';
 import { PackagingEntities } from './packaging.entities';
 
@@ -18,12 +19,12 @@ export class DeliveredPackagingEntities {
   packaging_id: number;
 
   @Column()
-  delivered_quatity: number;
+  delivered_quantity: number;
 
   @Column()
   date_delivered: number;
 
-  @ManyToMany(() => PackagingEntities, (props) => props.deliveredPackagings)
+  @ManyToOne(() => PackagingEntities)
   @JoinColumn({ name: 'packaging_id' })
   packaging: PackagingEntities;
 }

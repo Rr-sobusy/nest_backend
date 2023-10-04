@@ -22,7 +22,7 @@ export class DeliveredPackagingEntities {
   delivered_quantity: number;
 
   @Column()
-  date_delivered: number;
+  date_delivered: Date;
 
   @ManyToOne(() => PackagingEntities)
   @JoinColumn({ name: 'packaging_id' })

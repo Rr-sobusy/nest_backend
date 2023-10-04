@@ -26,7 +26,11 @@ export class PackagingService {
   }
 
   findDeliveredPackagings() {
-    return this.deliveredPackagingRepository.find();
+    return this.deliveredPackagingRepository.find({
+       relations : {
+          packaging : true
+       }
+    });
   }
 
   findReleasedPackagings(){

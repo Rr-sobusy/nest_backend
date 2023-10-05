@@ -139,4 +139,11 @@ export class SalesService {
     });
     return newSales;
   }
+
+  //! Delete Sales Instance
+  destroySales(salesId: number) {
+    return this.salesRepository.delete({
+      sales_id: salesId,
+    });
+  }
 }

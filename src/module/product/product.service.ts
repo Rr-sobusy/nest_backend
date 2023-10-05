@@ -15,7 +15,9 @@ export class ProductService {
     private productionOutputRepository: Repository<ProductionOutputEntities>,
   ) {}
 
-  // Find products data
+  /**
+   * * Uses query builder for complicated queries
+   */
   findProducts(): Promise<ProductEntities[]> {
     return this.productRepository
       .createQueryBuilder('p')
@@ -59,11 +61,11 @@ export class ProductService {
   findProductions() {
     return this.productionOutputRepository.find({
       relations: {
-          product : true
+        product: true,
       },
-      order :{
-        production_id : "DESC"
-      }
+      order: {
+        production_id: 'DESC',
+      },
     });
   }
 
@@ -83,5 +85,12 @@ export class ProductService {
       production_date: new Date(createProductionParams.production_date),
     });
     return this.productionOutputRepository.save(newProduction);
+  }
+
+  // Delete production by production_id
+  destroyProduction(productionId: number) {
+    return this.productionOutputRepository.delete({
+      production_id: productionId,
+    });
   }
 }

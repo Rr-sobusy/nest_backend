@@ -5,7 +5,7 @@ import { PackagingEntities } from 'src/entitities/packaging.entities';
 import { DeliveredPackagingEntities } from 'src/entitities/packaging-deliveries.entities';
 import { ReleasedPackagingEntities } from 'src/entitities/packaging-released.entities';
 import { ReturnedPackagingEntities } from 'src/entitities/packaging-returned.entities';
-
+import { ReleasedPackagingParams } from 'src/utils/types/CreateReleasedPackaging';
 @Injectable()
 export class PackagingService {
   constructor(
@@ -13,8 +13,10 @@ export class PackagingService {
     private packagingRepository: Repository<PackagingEntities>,
     @InjectRepository(DeliveredPackagingEntities)
     private deliveredPackagingRepository: Repository<DeliveredPackagingEntities>,
-    @InjectRepository(ReleasedPackagingEntities) private releasedPackagingRepository:Repository<ReleasedPackagingEntities>,
-    @InjectRepository(ReturnedPackagingEntities) private returnedPackagingRepository:Repository<ReturnedPackagingEntities>
+    @InjectRepository(ReleasedPackagingEntities)
+    private releasedPackagingRepository: Repository<ReleasedPackagingEntities>,
+    @InjectRepository(ReturnedPackagingEntities)
+    private returnedPackagingRepository: Repository<ReturnedPackagingEntities>,
   ) {}
 
   findPackagings() {
@@ -27,17 +29,26 @@ export class PackagingService {
 
   findDeliveredPackagings() {
     return this.deliveredPackagingRepository.find({
-       relations : {
-          packaging : true
-       }
+      relations: {
+        packaging: true,
+      },
     });
   }
 
-  findReleasedPackagings(){
-        return this.releasedPackagingRepository.find()
+  findReleasedPackagings() {
+    return this.releasedPackagingRepository.find();
   }
 
-  findReturnedPackagings(){
-        return this.returnedPackagingRepository.find()
+  findReturnedPackagings() {
+    return this.returnedPackagingRepository.find();
+  }
+
+  /**
+   *  TODO : Create new packaging release instance
+   */
+  createReleasedPackaging(
+    createReleasedPackagingParams: ReleasedPackagingParams,
+  ) {
+    return this.releasedPackagingRepository.save(createReleasedPackagingParams);
   }
 }

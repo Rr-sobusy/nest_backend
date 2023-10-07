@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { PackagingService } from './packaging.service';
 import { CreateReleasedPackagingDto } from './dtos/CreateReleasedPackagingDto';
+import { CreateDeliveredPackagingDto } from './dtos/CreateDeliveredPackagingDto';
 @Controller('packaging')
 export class PackagingController {
   constructor(private packagingService: PackagingService) {}
@@ -31,5 +32,10 @@ export class PackagingController {
     return this.packagingService.createReleasedPackaging(
       createReleasedPackagingDto,
     );
+  }
+
+  @Post('adddelivered')
+  createDeliveredPackaging(@Body() createDeliveredPackagingDto:CreateDeliveredPackagingDto){
+      return this.packagingService.createDeliveredPackaging(createDeliveredPackagingDto)
   }
 }

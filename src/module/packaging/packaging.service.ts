@@ -5,7 +5,8 @@ import { PackagingEntities } from 'src/entitities/packaging.entities';
 import { DeliveredPackagingEntities } from 'src/entitities/packaging-deliveries.entities';
 import { ReleasedPackagingEntities } from 'src/entitities/packaging-released.entities';
 import { ReturnedPackagingEntities } from 'src/entitities/packaging-returned.entities';
-import { ReleasedPackagingParams } from 'src/utils/types/CreateReleasedPackaging';
+import { CreateReleasedPackagingParams } from 'src/utils/types/CreateReleasedPackaging';
+import { CreateDeliveredPackagingParams } from 'src/utils/types/CreateDeliveredPackaging';
 @Injectable()
 export class PackagingService {
   constructor(
@@ -36,7 +37,11 @@ export class PackagingService {
   }
 
   findReleasedPackagings() {
-    return this.releasedPackagingRepository.find();
+    return this.releasedPackagingRepository.find({
+      relations: {
+        packaging: true,
+      },
+    });
   }
 
   findReturnedPackagings() {
@@ -47,8 +52,19 @@ export class PackagingService {
    *  TODO : Create new packaging release instance
    */
   createReleasedPackaging(
-    createReleasedPackagingParams: ReleasedPackagingParams,
+    createReleasedPackagingParams: CreateReleasedPackagingParams,
   ) {
     return this.releasedPackagingRepository.save(createReleasedPackagingParams);
+  }
+
+  /**
+   * TODO : create new packaging delivery instance
+   */
+  createDeliveredPackaging(
+    createDeliveredPackagingParams: CreateDeliveredPackagingParams,
+  ) {
+    return this.deliveredPackagingRepository.save(
+      createDeliveredPackagingParams,
+    );
   }
 }

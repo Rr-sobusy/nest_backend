@@ -1,4 +1,4 @@
-export type ReleasedPackagingParams = {
+export type CreateReleasedPackagingParams = {
         packaging_id: number;
         quantity_released: number;
         date_released: Date;

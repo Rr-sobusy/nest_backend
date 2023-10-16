@@ -26,6 +26,11 @@ export class SalesController {
     return this.salesService.findBestCustomerForMonth();
   }
 
+  @Get('bestproductthismonth')
+  findBestProductThisWeek(){
+      return this.salesService.findBestSoldProductThisWeek()
+  }
+
   @Post()
   createSales(@Body() createOrderDto: CreateOrderDto) {
     return this.salesService.createSales(createOrderDto);

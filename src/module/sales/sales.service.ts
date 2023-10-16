@@ -98,7 +98,7 @@ export class SalesService {
     });
   }
 
-  // Find the three best customer for entire month
+  //! ---NOT USED ON FRONT END --- Find the three best customer for entire month
   findBestCustomerForMonth() {
     const queryResult = this.salesRepository
       .createQueryBuilder('sales')
@@ -118,6 +118,27 @@ export class SalesService {
     return queryResult;
   }
 
+  // * Find the best 5 sold product in the entire month
+  findBestSoldProductThisWeek() {
+    const queryResult = this.salesRepository
+      .createQueryBuilder('sales')
+      .select([
+        `sales_items."product_id"`,
+        `(select product_name from products where product_id = sales_items.product_id)`,
+        `sum(sales_items.quantity * products.packaging_size) as summed`,
+      ])
+      .innerJoin('sales.sales_items', 'sales_items')
+      .innerJoin('sales_items.product', 'products')
+      .where(
+        `extract(month from sales."createdAt"::date) = extract(month from now()::date)`,
+      )
+      .groupBy(`sales_items.product_id`)
+      .orderBy('summed','DESC')
+      .limit(5)
+      .getRawMany();
+    return queryResult;
+  }
+
   // Create new sales instance
   async createSales(orderDetails: CreateOrderParams) {
     const newSales = this.salesRepository.save({
@@ -125,7 +146,6 @@ export class SalesService {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-
     // Iterate list from sales_items type from OrderItem request body
     orderDetails.sales_items.map(async (values) => {
       const newSalesItems = this.salesItemsRepository.create({
